@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../common/index.js"></script>
+</head>
+<body>
+  <canvas id="webgl" width="400" height="400" style="border: 1px solid;"></canvas>
+  <script>
+    const canvas = document.getElementById('webgl')
+    const gl = canvas.getContext('webgl')
+    const vertexs = [
+      0.5,0.5,
+      -0.5,0.5,
+      -0.5,-0.5,
+      0.5,-0.5
+    ]
+    const data = new Float32Array(vertexs)
+    const program = initProgram(gl)
+    gl.clearColor(0.0,0.0,0.0,1.0)
+    gl.drawArrays(gl.LINE_LOOP,0,4)
+   
+  </script>
+</body>
+</html>

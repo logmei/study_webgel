@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../common/webgl-utils.js"></script>
+  <script src="../common/cuon-utils.js"></script>
+  <script src="../common/webgl-debug.js"></script>
+  <!-- 顶点着色器源码 -->
+  <script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec4 a_position;
+    attribute float a_pointSize;
+    void main(){
+      gl_PointSize = a_pointSize;
+      gl_Position = a_position;
+    }
+
+  </script>
+  <!-- 片元着色器源码 -->
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    void main(){
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="webgl" width="400" height="500" style="border: 1px solid;"></canvas>
+  <script>
+    const canvas = document.getElementById('webgl')
+    const gl = getWebGLContext(canvas)
+
+    var vertexShaderSource = document.getElementById('vertexShader').innerText;
+    var fragShaderSource = document.getElementById('fragmentShader').innerText;
+     
+     //初始化着色器
+     if(!initShaders(gl,vertexShaderSource,fragShaderSource)){
+       
+     }
+     var a_position = gl.getAttribLocation(gl.program,'a_position')
+     var a_pointSize = gl.getAttribLocation(gl.program,'a_pointSize')
+     if(a_position<0){
+       console.log('failed get the storage location of a_position');
+      //  return;
+     }
+     //将顶点位置传输给attribute变量
+     gl.vertexAttrib2f(a_position,0.5,0.0)
+     gl.vertexAttrib1f(a_pointSize,10.0)
+     //设置<canvas>背景色
+      gl.clearColor(0.0,1.0,0.0,1.0)
+      //清除<canvas>
+      gl.clear(gl.COLOR_BUFFER_BIT)
+     //开始绘制
+     gl.drawArrays(gl.POINTS,0,1)
+
+
+  </script>
+</body>
+</html>

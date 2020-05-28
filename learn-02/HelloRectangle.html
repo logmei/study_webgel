@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../common/webgl-utils.js"></script>
+  <script src="../common/cuon-utils.js"></script>
+  <script src="../common/webgl-debug.js"></script>
+  <script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec4 a_position;
+    void main(){
+      gl_Position = a_position;
+    }
+  </script> 
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    void main(){
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="canvas" width="700" height="500" style="border: 1px solid red;"></canvas>
+  <div>
+    <p>与multiPoint相比，两处关键的改动在于：</p>
+    <p>1.去掉gl_PointSize=10.0,该句只有在绘制单个点的时候才起作用</p>
+    <p>2.gl.drawArrays()方法的第一个参数从gl.POINTS被改为gl.TRIANGLES</p>
+    <P>gl.POINTS:一系列点</P>
+    <p>gl.LINES:一系列单独的线段(v0,v1),(v2,v3)</p>
+    <p>gl.LINE_STRIP:一系列链接的线段(v0,v1),(v1,v2),(v2,v3)</p>
+    <p>gl.LINE_LOOP:回路线段(v0,v1),(v1,v2),(v2,v3),(v3,v0)</p>
+    <p>三角形：gl.TRIANGLES:一系列单独的三角形(v0,v1,v2),(v3,v4,v5)</p>
+    <p>三角带：gl.TRIANGLE_STRIP:利用最后一条边和新点绘制三角形</p>
+    <p>三角扇：gl.TRIANGLE_FAN:利用最后一个点和第一个点和最新的一个点组成三角形</p>
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const gl = getWebGLContext(canvas)
+    const vertexShaderSource = document.getElementById('vertexShader').innerText
+    const fragmentShaderSource = document.getElementById('fragmentShader').innerText
+    //初始化着色器
+    initShaders(gl,vertexShaderSource,fragmentShaderSource)
+    //获取变量a_position的存储位置
+    let a_position = gl.getAttribLocation(gl.program,'a_position')
+    //获取u_FragColor变量
+    let u_FragColor = gl.getUniformLocation(gl.program,'u_FragColor')
+    //设置背景色
+    gl.clearColor(0.0,0.0,0.0,1.0)
+    //清空
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  
+    //设置顶点位置
+    const n = initVertexBuffers(gl,a_position)
+    gl.uniform4f(u_FragColor,1.0,0.0,0.0,1.0)
+    
+    //绘制三个点
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,n)
+    // gl.drawArrays(gl.TRIANGLE_FAN,0,n)
+    //设置顶点位置
+    function initVertexBuffers(gl,a_position){
+      //顶点
+      // const vertices = new Float32Array([0.0,0.5,-0.5,-0.5,0.5,-0.5])
+      const vertices = new Float32Array([-0.5,0.5,-0.5,-0.5,0.5,0.5,0.5,-0.5])
+      //顶点个数
+      const n = 4
+      //创建缓冲区对象
+      const vertexBuffer = gl.createBuffer()
+      if(!vertexBuffer){
+        console.log('failed to create the buffer object')
+        return -1
+      }
+     
+      //将缓冲区对象绑定到目标
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
+      //向缓冲区对象中写入数据
+      gl.bufferData(gl.ARRAY_BUFFER,vertices, gl.STATIC_DRAW)
+      //将缓冲区对象分配给a_position
+      gl.vertexAttribPointer(a_position,2,gl.FLOAT, false , 0, 0)
+      //链接a_position变量与分配给它的缓冲区对象
+      gl.enableVertexAttribArray(a_position)
+      return n
+    }
+
+  </script>
+</body>
+</html>

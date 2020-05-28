@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../common/webgl-utils.js"></script>
+  <script src="../common/cuon-utils.js"></script>
+  <script src="../common/webgl-debug.js"></script>
+  <script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec4 a_position;
+    void main(){
+      gl_PointSize = 10.0;
+      gl_Position = a_position;
+    }
+  </script>
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    void main(){
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="canvas" width="700" height="500" style="border: 1px solid red;background: black;"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const gl = getWebGLContext(canvas)
+    const vertexShaderSource = document.getElementById('vertexShader').innerText
+    const fragmentShaderSource = document.getElementById('fragmentShader').innerText
+    //初始化着色器
+    initShaders(gl,vertexShaderSource,fragmentShaderSource)
+    //获取变量a_position的存储位置
+    let a_position = gl.getAttribLocation(gl.program,'a_position')
+    //注册鼠标点击事件响应函数
+    canvas.onmousedown = function(e){
+      clickPosition(e,gl,canvas,a_position)
+    }
+    const g_points = []
+    function clickPosition(e,gl,canvas,a_position){
+      var x = e.clientX;//鼠标点击处的x坐标
+      var y = e.clientY;//鼠标点击处的y坐标
+      var rect = e.target.getBoundingClientRect();
+      x = ((x-rect.left) - canvas.width/2)/(canvas.width/2)
+      y = (canvas.height/2-(y-rect.top))/(canvas.height/2)
+      //将坐标存储到g_position数组中
+      g_points.push(x)
+      g_points.push(y)
+
+      //清除<canvas>
+      gl.clear(gl.COLOR_BUFFER_BIT)
+
+      var len = g_points.length
+      for(let i = 0;i<len;i+=2){
+        //将点的位置传递到变量中a_position
+        gl.vertexAttrib3f(a_position,g_points[i],g_points[i+1],0.0)
+        //绘制点
+        gl.drawArrays(gl.POINTS,0,1)
+      }
+    }
+
+  </script>
+</body>
+</html>
