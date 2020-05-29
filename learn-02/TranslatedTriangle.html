@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="../common/webgl-utils.js"></script>
+  <script src="../common/cuon-utils.js"></script>
+  <script src="../common/webgl-debug.js"></script>
+  <script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec4 a_position;
+    uniform vec4 u_Translation;
+    void main(){
+      gl_Position = a_position + u_Translation;
+    }
+  </script> 
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    void main(){
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="canvas" width="700" height="500" style="border: 1px solid red;"></canvas>
+  <div>
+    <p>增加变量：uniform vec4 u_Translation;</p>
+    <p>为gl_Position赋值：gl_Position = a_position + u_Translation</p>
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas')
+    const gl = getWebGLContext(canvas)
+    const vertexShaderSource = document.getElementById('vertexShader').innerText
+    const fragmentShaderSource = document.getElementById('fragmentShader').innerText
+    //初始化着色器
+    initShaders(gl,vertexShaderSource,fragmentShaderSource)
+    //获取变量a_position的存储位置
+    let a_position = gl.getAttribLocation(gl.program,'a_position')
+    //获取u_Translation变量
+    let u_Translation = gl.getUniformLocation(gl.program,'u_Translation')
+    //设置背景色
+    gl.clearColor(0.0,0.0,0.0,1.0)
+    //清空
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  
+    //设置顶点位置
+    const n = initVertexBuffers(gl,a_position)
+    gl.uniform4f(u_Translation,0.5,0.5,0,0.0)
+    //绘制三个点
+    gl.drawArrays(gl.TRIANGLES,0,n)
+    //设置顶点位置
+    function initVertexBuffers(gl,a_position){
+      //顶点
+      const vertices = new Float32Array([0.0,0.5,-0.5,-0.5,0.5,-0.5])
+      //顶点个数
+      const n = 3
+      //创建缓冲区对象
+      const vertexBuffer = gl.createBuffer()
+      if(!vertexBuffer){
+        console.log('failed to create the buffer object')
+        return -1
+      }
+     
+      //将缓冲区对象绑定到目标
+      gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
+      //向缓冲区对象中写入数据
+      gl.bufferData(gl.ARRAY_BUFFER,vertices, gl.STATIC_DRAW)
+      //将缓冲区对象分配给a_position
+      gl.vertexAttribPointer(a_position,2,gl.FLOAT, false , 0, 0)
+      //链接a_position变量与分配给它的缓冲区对象
+      gl.enableVertexAttribArray(a_position)
+      return n
+    }
+
+  </script>
+</body>
+</html>
