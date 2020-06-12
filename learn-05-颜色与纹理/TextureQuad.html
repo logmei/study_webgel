@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>纹理图像</title>
+  <script src="../common/webgl-utils.js"></script>
+  <script src="../common/cuon-utils.js"></script>
+  <script src="../common/webgl-debug.js"></script>
+  <script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec4 a_Position;
+    attribute vec2 a_TexCoord;
+    varying vec2 v_TexCoord;
+    void main(){
+      gl_Position = a_Position;
+      v_TexCoord = a_TexCoord;
+    }
+  </script>
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    uniform sampler2D u_Sampler;
+    precision mediump float;
+    varying vec2 v_TexCoord;
+    void main(){
+      gl_FragColor = texture2D(u_Sampler,v_TexCoord);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="canvas" width="700px" height="500px" style="border: 1px solid red;"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas')
+    //获取上下文
+    const gl = getWebGLContext(canvas)
+    //获取shader source
+    const vertexShaderSource = document.getElementById('vertexShader').innerText
+    const fragmentShaderSource = document.getElementById('fragmentShader').innerText
+
+    //初始化shader
+    initShaders(gl,vertexShaderSource,fragmentShaderSource)
+
+    //设置顶点位置
+    const n = initVertexBuffer(gl)
+    //设置纹理
+    initTextures(gl,n)
+
+    //初始化顶点缓冲区
+    function initVertexBuffer(gl){
+      //顶点坐标和纹理坐标
+      const verticesTexCoords = new Float32Array([
+       -0.5, 0.5, 0.0,1.0,
+       -0.5,-0.5, 0.0,0.0,
+       0.5 , 0.5, 1.0,1.0,
+       0.5 ,-0.5, 1.0,0.0
+      ])
+
+      const n = 4
+      //创建缓冲区对象
+      const vertexTexCoordBuffer = gl.createBuffer()
+      //将顶点坐标写入缓冲区
+      gl.bindBuffer(gl.ARRAY_BUFFER,vertexTexCoordBuffer)
+      gl.bufferData(gl.ARRAY_BUFFER,verticesTexCoords,gl.STATIC_DRAW)
+
+      const Fsize = verticesTexCoords.BYTES_PER_ELEMENT
+      //为a_position设置顶点信息
+      const a_Position = gl.getAttribLocation(gl.program,'a_Position')
+      gl.vertexAttribPointer(a_Position,2,gl.FLOAT,false,Fsize*4,0)
+      gl.enableVertexAttribArray(a_Position)
+
+      //将纹理坐标分配给a_TexCoord
+      const a_TexCoord = gl.getAttribLocation(gl.program,'a_TexCoord')
+      gl.vertexAttribPointer(a_TexCoord,2,gl.FLOAT,false,Fsize*4,Fsize*2)
+      gl.enableVertexAttribArray(a_TexCoord)
+
+      return n
+    }
+
+    //初始化纹理
+    function initTextures(gl,n){
+      //创建纹理对象
+      const texture = gl.createTexture()
+      //获取u_Sampler的存储位置
+      const u_Sampler = gl.getUniformLocation(gl.program,'u_Sampler')
+      //创建image对象
+      const image = new Image()
+      //注册图像加载响应事件
+      image.onload = function(){
+        loadTexture(gl,n,texture,u_Sampler,image)
+      }
+      //浏览器开始加载图像
+      image.src = '../images/wood.jpeg'
+      return true
+    }
+    //加载纹理
+    function loadTexture(gl,n,texture,u_Sampler,image){
+      //对纹理进行y轴翻转
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,1)
+      //开启0号纹理单元
+      gl.activeTexture(gl.TEXTURE0)
+      //向target绑定纹理对象
+      gl.bindTexture(gl.TEXTURE_2D,texture)
+      //配置纹理参数
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR)
+      //配置纹理图像
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,image)
+      //将0号纹理传递给着色器
+      gl.uniform1i(u_Sampler,0)
+      //清除
+      gl.clearColor(0.0,0.0,0.0,1.0)
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      gl.drawArrays(gl.TRIANGLE_STRIP,0,n)
+    }
+  </script>
+</body>
+</html>

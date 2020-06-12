@@ -28,7 +28,11 @@
 </head>
 <body>
   <canvas id="canvas" width="700px" height="500px" style="border: 1px solid red;"></canvas>
-  <p>顶点着色器中声明attribute变量a_color用以接受颜色数据，</p>
+  <p>顶点着色器中声明attribute变量a_color用以接受颜色数据(attribute vec4 a_Color;)，然后声明了变量（varying vec4 v_Color）,</p>
+  <p>该变量负责将颜色值传给片元着色器，片元着色器中定义变量(varying vec4 v_Color;),</p>
+  <h3>注意：</h3>
+  <p>varying变量只能是float(以及相关的vec2,vec3,vec4,mat2,mat3,mat4);</p>
+  <p>片元着色器中需要添加精度：(precision mediump float;)</p>
   <script>
     const canvas = document.getElementById('canvas')
     //获取上下文
@@ -44,8 +48,10 @@
     //清除
     gl.clearColor(0.0,0.0,0.0,1.0)
     gl.clear(gl.COLOR_BUFFER_BIT)
-    //画
-    gl.drawArrays(gl.POINTS,0,n)
+    //画点
+    // gl.drawArrays(gl.POINTS,0,n)
+    //画片元
+    gl.drawArrays(gl.TRIANGLES,0,n)
 
 
     //初始化顶点缓冲区
