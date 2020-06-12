@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多项顶点坐标存储在一个数组</title>
+  <script src="../common/webgl-utils.js"></script>
+  <script src="../common/cuon-utils.js"></script>
+  <script src="../common/webgl-debug.js"></script>
+  <script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec4 a_Position;
+    attribute float a_PointSize;
+    void main(){
+      gl_Position = a_Position;
+      gl_PointSize = a_PointSize;
+    }
+  </script>
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    void main(){
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="canvas" width="700px" height="500px" style="border: 1px solid red;"></canvas>
+  <p>gl.vertexAttribPointer(location,size,type,normalized,stride,offset)</p>
+  <p>将绑定到gl.ARRAY_BUFFER的缓冲区对象分配给由location指定的attribute变量</p>
+  <h3>参数</h3>
+  <p>location:指定待分配attribute变量的存储位置</p>
+  <p>size:指定缓冲区中每个顶点的分量个数（1到4）</p>
+  <p>type:指定数据格式（例如：gl.FLOAT）</p>
+  <p>normalize:true或false,表明是否将非浮点型的数据归一化到[0,1]或[-1,-1]区间</p>
+  <p>stride:指定相邻两个顶点间的字节数，默认为0</p>
+  <p>offset:指定缓冲区对象中的偏移量（以字节为单位），即attribute变量从缓冲区中的何处开始存储。如果是从起始位置开始，该参数应设置为0</p>
+  <script>
+    const canvas = document.getElementById('canvas')
+    //获取上下文
+    const gl = getWebGLContext(canvas)
+    //获取shader源码
+    const vertexShaderSource = document.getElementById('vertexShader').innerText
+    const fragmentShaderSource = document.getElementById('fragmentShader').innerText
+    //初始化shader
+    initShaders(gl,vertexShaderSource,fragmentShaderSource)
+    
+    //设置顶点信息
+    const n = initVertexBuffers(gl)
+    //清除
+    gl.clearColor(0.0,0.0,0.0,1.0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    //画
+    gl.drawArrays(gl.POINTS,0,n)
+
+
+    //初始化顶点缓冲区
+    function initVertexBuffers(gl){
+
+      const n = 3
+      //顶点
+      const vertices = 
+      new Float32Array([
+        0.0,0.5,10.0,
+        -0.5,-0.5,20.0,
+        0.5,-0.5,30.0])
+      //尺寸
+      // const sizes = new Float32Array([10.0,20.0,30.0])
+      //创建缓冲区对象
+      const vertexBuffer = gl.createBuffer()
+      const sizeBuffer = gl.createBuffer()
+
+      //绑定缓冲区
+      gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffer)
+      //填充值
+      gl.bufferData(gl.ARRAY_BUFFER,vertices,gl.STATIC_DRAW)
+      const FSIZE = vertices.BYTES_PER_ELEMENT
+      const a_Position = gl.getAttribLocation(gl.program,'a_Position')
+      //给变量赋值
+      gl.vertexAttribPointer(a_Position,2,gl.FLOAT,false,FSIZE*3,0)
+      //使顶点可用
+      gl.enableVertexAttribArray(a_Position)
+     
+
+      // gl.bindBuffer(gl.ARRAY_BUFFER,sizeBuffer)
+      // gl.bufferData(gl.ARRAY_BUFFER,sizes,gl.STATIC_DRAW)
+      const a_PointSize = gl.getAttribLocation(gl.program,'a_PointSize')
+      gl.vertexAttribPointer(a_PointSize,1,gl.FLOAT,false,FSIZE*3,FSIZE*2)
+      gl.enableVertexAttribArray(a_PointSize)
+      return n
+
+    }
+  </script>
+</body>
+</html>
