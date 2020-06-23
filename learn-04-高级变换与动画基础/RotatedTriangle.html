@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>动画-旋转三角形</title>
+  <script src="../common/webgl-utils.js"></script>
+  <script src="../common/cuon-utils.js"></script>
+  <script src="../common/cuon-matrix.js"></script>
+  <script src="../common/webgl-debug.js"></script>
+  <script id="vertexShader" type="x-shader/x-vertex">
+    attribute vec4 a_position;
+    uniform mat4 u_ModelMatrix;
+    void main(){
+      gl_Position = u_ModelMatrix * a_position;
+    }
+  </script>
+
+  <script id="fragmentShader" type="x-shader/x-fragment">
+    void main(){
+      gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="canvas" width="700px" height="500px" style="border: 1px solid red;"></canvas>
+  <script>
+    const canvas = document.getElementById('canvas')
+    //获取上下文
+    const gl = getWebGLContext(canvas)
+    //获取shader源码
+    const vertexShaderSource = document.getElementById('vertexShader').innerText
+    const fragmentShaderSource = document.getElementById('fragmentShader').innerText
+
+    //旋转速度（度/秒）
+    const ANGLE_STEP = 45.0
+    //初始化shader
+    initShaders(gl,vertexShaderSource,fragmentShaderSource)
+
+    //获取变量
+    const a_position = gl.getAttribLocation(gl.program,'a_position')
+    const u_ModelMatrix = gl.getUniformLocation(gl.program,'u_ModelMatrix')
+
+    //设置顶点位置
+    let n = initVertexBuffers(gl,a_position)
+    //设置背景色
+    gl.clearColor(0.0,0.0,0.0,1.0)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+    //三角形的当前旋转角度
+    let currentAngle = 0.0
+    //模型矩阵、Matrix4对象
+    const modelMatrix = new Matrix4()
+    //记录上一次调用函数的时间
+    var g_last = Date.now()
+    //设置顶点位置
+    function initVertexBuffers(gl,a_position){
+      //顶点
+      const vertexs = new Float32Array([0.5,0.5,0,-0.5,-0.5,0.5])
+      //顶点个数
+      const n = 3
+      //创建缓冲区对象
+      const vertexBuffer = gl.createBuffer()
+      //将缓冲区对象绑定到对象
+      gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffer)
+      //像缓冲区对象中写入数据
+      gl.bufferData(gl.ARRAY_BUFFER,vertexs,gl.STATIC_DRAW) 
+      //将缓冲区对象分配给a_position
+      gl.vertexAttribPointer(a_position,2,gl.FLOAT,false,0,0)
+      //链接a_position变量与分配给它的缓冲区对象
+      gl.enableVertexAttribArray(a_position)
+      return n
+    }
+    tick()
+    // draw(gl,n,currentAngle,modelMatrix,u_ModelMatrix)
+
+    //开始绘制三角形
+    function tick(){
+      //更新旋转角
+      currentAngle = animate(currentAngle)
+      draw(gl,n,currentAngle,modelMatrix,u_ModelMatrix);
+      requestAnimationFrame(tick)
+    }
+
+    function draw(gl,n,currentAngle,modelMatrix,u_ModelMatrix){
+      //设置旋转矩阵
+      modelMatrix.setRotate(currentAngle,0,0,1)
+      //将旋转矩阵传输给顶点着色器
+      gl.uniformMatrix4fv(u_ModelMatrix,false,modelMatrix.elements)
+      //清除canvas
+      gl.clear(gl.COLOR_BUFFER_BIT)
+      //绘制三角形
+      gl.drawArrays(gl.TRIANGLES,0,n)
+    }
+
+   
+    function animate(angle){
+      //计算距离上次调用经过多长的时间
+      const now = Date.now()
+      const elapsed = now - g_last;//毫秒
+      g_last = now
+      //根据距离上次调用的时间，更新当前旋转角度
+      var newAngle = angle + (ANGLE_STEP * elapsed)/1000
+      return newAngle %= 360
+    }
+   
+
+  </script>
+</body>
+</html>
